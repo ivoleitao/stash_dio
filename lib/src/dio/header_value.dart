@@ -1,16 +1,36 @@
 import 'dart:collection';
 
+/// Header parser
 class _HeaderValue implements HeaderValue {
+  /// The header to parse
   String _value;
+
+  /// The parsed parameters out of the header value
   Map<String, String> _parameters;
+
+  /// A unmodifiable version of the parse parameters.
   Map<String, String> _unmodifiableParameters;
 
+  /// Builds a [_HeaderValue] out of a plain string header and a list of parameters
+  ///
+  /// * [_value]: The header directive
+  /// * [_parameters]: The list of parameters
+  ///
+  /// Returns a new [_HeaderValue]
   _HeaderValue([this._value = '', Map<String, String> parameters]) {
     if (parameters != null) {
       _parameters = Map<String, String>.from(parameters);
     }
   }
 
+  /// Parses a [_HeaderValue] from a plain string
+  ///
+  /// * [value]: The header directive
+  /// * [parametersSeparator]: The parameter separator, defaults to ;
+  /// * [valueSeparator]: The value separator
+  /// * [preserveBackslash]: If the backslash should be preserved, defaults to false
+  ///
+  /// Returns the parsed [_HeaderValue]
   static _HeaderValue parse(String value,
       {String parameterSeparator = ';',
       String valueSeparator,
@@ -24,6 +44,7 @@ class _HeaderValue implements HeaderValue {
   @override
   String get value => _value;
 
+  /// Ensures that the parameters have a non-null value
   void _ensureParameters() {
     _parameters ??= <String, String>{};
   }
@@ -47,6 +68,12 @@ class _HeaderValue implements HeaderValue {
     return sb.toString();
   }
 
+  /// Parses a header directive
+  ///
+  /// * [s]: The header directive
+  /// * [parameterSeparator]: The parameter separator
+  /// * [valueSeparator]: The value separator
+  /// * [preserveBackslash]: If the backslash should be preserved
   void _parse(String s, String parameterSeparator, String valueSeparator,
       bool preserveBackslash) {
     var index = 0;
@@ -197,6 +224,13 @@ abstract class HeaderValue {
 
   /// Creates a new header value object from parsing a header value
   /// string with both value and optional parameters.
+  ///
+  /// * [value]: The header directive
+  /// * [parameterSeparator]: The parameter separator, defaults to ';'
+  /// * [valueSeparator]: The value separator
+  /// * [preserveBackslash]: If the backslash should be preserved
+  ///
+  /// Returns a [HeaderValue]
   static HeaderValue parse(String value,
       {String parameterSeparator = ';',
       String valueSeparator,

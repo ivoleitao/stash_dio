@@ -1,17 +1,7 @@
 import 'package:equatable/equatable.dart';
-import 'package:json_annotation/json_annotation.dart';
-
-part 'cache_value.g.dart';
-
-@JsonSerializable()
 
 /// The cached response
 class CacheValue extends Equatable {
-  static DateTime _fromJsonStaleDate(int date) =>
-      DateTime.fromMicrosecondsSinceEpoch(date);
-
-  static int _toJsonStaleDate(DateTime date) => date.microsecondsSinceEpoch;
-
   /// Http status code.
   final int statusCode;
 
@@ -19,7 +9,6 @@ class CacheValue extends Equatable {
   final List<int> headers;
 
   /// The date after which the value needs to refreshed
-  @JsonKey(fromJson: _fromJsonStaleDate, toJson: _toJsonStaleDate)
   final DateTime staleDate;
 
   /// Response bytes
@@ -46,9 +35,21 @@ class CacheValue extends Equatable {
   List<Object> get props => [statusCode, headers, staleDate, data];
 
   /// Creates a [CacheValue] from json map
-  factory CacheValue.fromJson(Map<String, dynamic> json) =>
-      _$CacheValueFromJson(json);
+  ///
+  /// * [json]: The json map
+  factory CacheValue.fromJson(Map<String, dynamic> json) => CacheValue(
+        statusCode: json['statusCode'] as int,
+        headers: (json['headers'] as List)?.map((e) => e as int)?.toList(),
+        staleDate:
+            DateTime.fromMicrosecondsSinceEpoch(json['staleDate'] as int),
+        data: (json['data'] as List)?.map((e) => e as int)?.toList(),
+      );
 
   /// Creates a json map from a [CacheValue]
-  Map<String, dynamic> toJson() => _$CacheValueToJson(this);
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'statusCode': statusCode,
+        'headers': headers,
+        'staleDate': staleDate.microsecondsSinceEpoch,
+        'data': data
+      };
 }

@@ -9,21 +9,36 @@ import 'cache_interceptor.dart';
 import 'cache_value.dart';
 import 'header_value.dart';
 
+/// Function to call with the parsed header values
 typedef _ParseHeadCallback = void Function(Duration maxAge, Duration maxStale);
 
+/// A [Interceptor] builder class
 class CacheInterceptorBuilder {
+  /// A map of [RegExp] to [Cache] for each of he patterns
   final Map<RegExp, Cache> _cacheMap = {};
 
+  /// The callback that will be executed before the request is initiated.
   InterceptorSendCallback get onRequest => _onRequest;
 
+  /// The callback that will be executed on success.
   InterceptorSuccessCallback get onResponse => _onResponse;
 
+  /// The callback that will be executed on error.
   InterceptorErrorCallback get onError => _onError;
 
+  /// Registers a [Cache] under a specific pattern
+  ///
+  /// * [pattern]: The pattern
+  /// * [cache]: The cache
   void cache(String pattern, Cache cache) {
     _cacheMap[RegExp(pattern)] = cache;
   }
 
+  /// Returns a [Cache] for the current [Uri] or null if none was configured
+  ///
+  /// * [uri]: The [Uri] being called
+  ///
+  /// Returns the [Cache] if any
   Cache _getCache(Uri uri) {
     var input = '${uri?.host}${uri?.path}?${uri.query}';
     for (var entry in _cacheMap.entries) {
@@ -35,7 +50,12 @@ class CacheInterceptorBuilder {
     return null;
   }
 
-  String hex(List<int> bytes) {
+  /// Converts bytes to a hexadecimal string
+  ///
+  /// * [bytes]: The bytes
+  ///
+  /// Return the hexadecimal string
+  String _hex(List<int> bytes) {
     final buffer = StringBuffer();
     for (var part in bytes) {
       if (part & 0xff != part) {
@@ -46,13 +66,29 @@ class CacheInterceptorBuilder {
     return buffer.toString().toUpperCase();
   }
 
+  /// Creates a MD5 out of String
+  ///
+  /// * [input]: The input string
+  ///
+  /// Return the MD5 hash of string
   String _toMd5(String input) {
-    return hex(md5.convert(utf8.encode(input)).bytes);
+    return _hex(md5.convert(utf8.encode(input)).bytes);
   }
 
+  /// Returns the key for the current [RequestOptions]
+  ///
+  /// * [options]: The [RequestOptions]
+  ///
+  /// Returns the key
   String _getKey(RequestOptions options) => _toMd5(
       '${options.uri?.host}${options.uri?.path}?${options.uri?.query}_${options.data?.toString()}');
 
+  /// Builds a [Response] out of [CacheValue]
+  ///
+  /// * [value]: The [CacheValue]
+  /// * [options]: The [RequestOptions]
+  ///
+  /// Returns a [Response]
   Response _responseFromCacheValue(CacheValue value, RequestOptions options) {
     Headers headers;
     if (value.headers != null) {
@@ -76,6 +112,12 @@ class CacheInterceptorBuilder {
         data: data, headers: headers, statusCode: value.statusCode ?? 200);
   }
 
+  /// Intercepts a request and checks if it's present on the cache
+  ///
+  /// * [options]: The [RequestOptions]
+  ///
+  /// Returns the response after a HTTP request or the cached response if
+  /// available on cache
   dynamic _onRequest(RequestOptions options) async {
     var cache = _getCache(options.uri);
     if (cache != null) {
@@ -88,6 +130,12 @@ class CacheInterceptorBuilder {
     return options;
   }
 
+  /// Parses a duration out of a parameter map
+  ///
+  /// * [parameters]: The parameters
+  /// * [key]: The key of the parameter to extract
+  ///
+  /// Returns the [Duration] if available or null is not available
   Duration _tryGetDurationFromMap(Map<String, String> parameters, String key) {
     if (null != parameters && parameters.containsKey(key)) {
       var value = int.tryParse(parameters[key]);
@@ -98,6 +146,10 @@ class CacheInterceptorBuilder {
     return null;
   }
 
+  /// Parses the response header
+  ///
+  /// * [response]: The [Response]
+  /// * [callback]: A callback to invoke upon sucessfull parsing
   void _tryParseHead(Response response, _ParseHeadCallback callback) {
     Duration maxAge;
     Duration maxStale;
@@ -125,6 +177,11 @@ class CacheInterceptorBuilder {
     callback(maxAge, maxStale);
   }
 
+  /// Intercepts the received from a HTTP call and stores on cache
+  ///
+  /// * [response]: The [Response]
+  ///
+  /// Returns [Response] after the interception
   dynamic _onResponse(Response response) async {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       var cache = _getCache(response.request.uri);
@@ -161,6 +218,12 @@ class CacheInterceptorBuilder {
     return response;
   }
 
+  /// Intercepts the call triggered upon error and returns if available the
+  /// cached response
+  ///
+  /// * [e]: The [DioError]
+  ///
+  /// Returns the error
   dynamic _onError(DioError e) async {
     var cache = _getCache(e.request.uri);
     if (cache != null) {
@@ -173,6 +236,7 @@ class CacheInterceptorBuilder {
     return e;
   }
 
+  /// Builds the [Interceptor]
   Interceptor build() {
     return CacheInterceptor.builder(this);
   }
