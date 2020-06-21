@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:stash_dio/dio_stash.dart';
+import 'package:stash_dio/stash_dio.dart';
 
 class Task {
   final int id;
