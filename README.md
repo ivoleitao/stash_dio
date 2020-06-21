@@ -9,6 +9,8 @@ A [Stash](https://github.com/ivoleitao/stash) Dio extension
 
 ## Introduction
 
+This integration of [stash](https://pub.dartlang.org/packages/stash) with [dio](https://pub.dev/packages/dio) provides a caching interceptor that is able to return the response from a Cache instead of hitting the backend system.
+
 ## Getting Started
 
 Add this to your `pubspec.yaml` (or create it):
