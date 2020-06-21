@@ -1,5 +1,5 @@
 /// A cache extension for Dio using the stash caching library
-library dio_stash;
+library stash_dio;
 
 import 'package:dio/dio.dart';
 import 'package:stash/stash_api.dart';
