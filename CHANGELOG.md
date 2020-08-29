@@ -1,6 +1,7 @@
 ## 1.0.0-dev.3
 
-- TODO
+- Updated to 2.9.0 sdk version
+- Updated dependencies
 
 ## 1.0.0-dev.2
 
