@@ -1,6 +1,6 @@
 ## 1.0.1
 
-- TODO
+- Wrongly removed the Equatable dependency, now restored
 
 ## 1.0.0
 

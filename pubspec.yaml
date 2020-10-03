@@ -9,6 +9,7 @@ environment:
   sdk: ">=2.10.0 <3.0.0"
 
 dependencies:
+  equatable: ^1.2.5
   http_parser: ^3.1.4
   crypto: ^2.1.5
   dio: ^3.0.10
