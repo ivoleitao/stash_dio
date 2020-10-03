@@ -1,6 +1,6 @@
 ## 1.0.2
 
-- TODO
+- Updated dependencies
 
 ## 1.0.1
 
