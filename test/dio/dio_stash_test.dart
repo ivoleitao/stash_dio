@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:stash/stash_memory.dart';
 import 'package:stash_dio/src/dio/interceptor_builder.dart';
 import 'package:test/test.dart';
@@ -55,7 +55,7 @@ Map<String, dynamic>? _withAnswer(_DioAdapterMock mock, dynamic obj,
     Headers.contentTypeHeader: [Headers.jsonContentType],
   });
 
-  when(mock.fetch(any!, any!, any)).thenAnswer((_) async => responseBody);
+  when(mock).calls(#fetch).thenAnswer((_) async => responseBody);
 
   return response;
 }
