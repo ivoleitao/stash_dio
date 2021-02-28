@@ -11,10 +11,10 @@ const baseUrl = 'https://jsonplaceholder.typicode.com';
 class _DioAdapterMock extends Mock implements HttpClientAdapter {}
 
 class Post {
-  final int userId;
-  final int id;
-  final String title;
-  final String body;
+  final int? userId;
+  final int? id;
+  final String? title;
+  final String? body;
 
   Post({this.userId, this.id, this.title, this.body});
 
@@ -26,10 +26,10 @@ class Post {
       : this(userId: userId, id: id, title: title, body: body);
 
   factory Post.fromJson(Map<String, dynamic> json) => Post(
-      userId: json['userId'] as int,
-      id: json['id'] as int,
-      title: json['title'] as String,
-      body: json['body'] as String);
+      userId: json['userId'] as int?,
+      id: json['id'] as int?,
+      title: json['title'] as String?,
+      body: json['body'] as String?);
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         'userId': userId,
@@ -46,16 +46,16 @@ void withInterceptor(
   dio.interceptors.add(buildWith(CacheInterceptorBuilder()).build());
 }
 
-Map<String, dynamic> _withAnswer(_DioAdapterMock mock, dynamic obj,
+Map<String, dynamic>? _withAnswer(_DioAdapterMock mock, dynamic obj,
     {int statusCode = 200}) {
-  Map<String, dynamic> response = obj.toJson();
+  Map<String, dynamic>? response = obj.toJson();
 
   var responseBody =
       ResponseBody.fromString(json.encode(response), statusCode, headers: {
     Headers.contentTypeHeader: [Headers.jsonContentType],
   });
 
-  when(mock.fetch(any, any, any)).thenAnswer((_) async => responseBody);
+  when(mock.fetch(any!, any!, any)).thenAnswer((_) async => responseBody);
 
   return response;
 }
@@ -65,8 +65,8 @@ dynamic _getResponse(Dio dio, String path) async {
 }
 
 void main() async {
-  Dio dio;
-  _DioAdapterMock dioAdapterMock;
+  late Dio dio;
+  late _DioAdapterMock dioAdapterMock;
 
   setUp(() {
     dio = Dio(BaseOptions(baseUrl: baseUrl));

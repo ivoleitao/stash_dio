@@ -10,9 +10,9 @@ class CacheInterceptor extends InterceptorsWrapper {
   /// * [onResponse]: The callback that will be executed on success.
   /// * [onError]: The callback that will be executed on error.
   CacheInterceptor._({
-    InterceptorSendCallback onRequest,
-    InterceptorSuccessCallback onResponse,
-    InterceptorErrorCallback onError,
+    InterceptorSendCallback? onRequest,
+    InterceptorSuccessCallback? onResponse,
+    InterceptorErrorCallback? onError,
   }) : super(onRequest: onRequest, onResponse: onResponse, onError: onError);
 
   /// Builds a [CacheInterceptor] out of a [CacheInterceptorBuilder]

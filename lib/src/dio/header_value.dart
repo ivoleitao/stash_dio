@@ -6,10 +6,10 @@ class _HeaderValue implements HeaderValue {
   String _value;
 
   /// The parsed parameters out of the header value
-  Map<String, String> _parameters;
+  Map<String, String?>? _parameters;
 
   /// A unmodifiable version of the parse parameters.
-  Map<String, String> _unmodifiableParameters;
+  Map<String, String?>? _unmodifiableParameters;
 
   /// Builds a [_HeaderValue] out of a plain string header and a list of parameters
   ///
@@ -17,7 +17,7 @@ class _HeaderValue implements HeaderValue {
   /// * [_parameters]: The list of parameters
   ///
   /// Returns a new [_HeaderValue]
-  _HeaderValue([this._value = '', Map<String, String> parameters]) {
+  _HeaderValue([this._value = '', Map<String, String>? parameters]) {
     if (parameters != null) {
       _parameters = Map<String, String>.from(parameters);
     }
@@ -33,7 +33,7 @@ class _HeaderValue implements HeaderValue {
   /// Returns the parsed [_HeaderValue]
   static _HeaderValue parse(String value,
       {String parameterSeparator = ';',
-      String valueSeparator,
+      String? valueSeparator,
       bool preserveBackslash = false}) {
     // Parse the string.
     var result = _HeaderValue();
@@ -50,9 +50,9 @@ class _HeaderValue implements HeaderValue {
   }
 
   @override
-  Map<String, String> get parameters {
+  Map<String, String?>? get parameters {
     _ensureParameters();
-    _unmodifiableParameters ??= UnmodifiableMapView(_parameters);
+    _unmodifiableParameters ??= UnmodifiableMapView(_parameters!);
     return _unmodifiableParameters;
   }
 
@@ -60,8 +60,8 @@ class _HeaderValue implements HeaderValue {
   String toString() {
     var sb = StringBuffer();
     sb.write(_value);
-    if (parameters != null && parameters.isNotEmpty) {
-      _parameters.forEach((String name, String value) {
+    if (parameters != null && parameters!.isNotEmpty) {
+      _parameters!.forEach((String name, String? value) {
         sb..write('; ')..write(name)..write('=')..write(value);
       });
     }
@@ -74,7 +74,7 @@ class _HeaderValue implements HeaderValue {
   /// * [parameterSeparator]: The parameter separator
   /// * [valueSeparator]: The value separator
   /// * [preserveBackslash]: If the backslash should be preserved
-  void _parse(String s, String parameterSeparator, String valueSeparator,
+  void _parse(String s, String parameterSeparator, String? valueSeparator,
       bool preserveBackslash) {
     var index = 0;
 
@@ -111,7 +111,7 @@ class _HeaderValue implements HeaderValue {
     }
 
     void parseParameters() {
-      var parameters = <String, String>{};
+      var parameters = <String, String?>{};
       _parameters = UnmodifiableMapView(parameters);
 
       String parseParameterName() {
@@ -127,7 +127,7 @@ class _HeaderValue implements HeaderValue {
         return s.substring(start, index).toLowerCase();
       }
 
-      String parseParameterValue() {
+      String? parseParameterValue() {
         if (!done() && s[index] == '"') {
           // Parse quoted value.
           var sb = StringBuffer();
@@ -218,7 +218,7 @@ class _HeaderValue implements HeaderValue {
 /// An instance of [HeaderValue] is immutable.
 abstract class HeaderValue {
   /// Creates a new header value object setting the value and parameters.
-  factory HeaderValue([String value = '', Map<String, String> parameters]) {
+  factory HeaderValue([String value = '', Map<String, String>? parameters]) {
     return _HeaderValue(value, parameters);
   }
 
@@ -233,7 +233,7 @@ abstract class HeaderValue {
   /// Returns a [HeaderValue]
   static HeaderValue parse(String value,
       {String parameterSeparator = ';',
-      String valueSeparator,
+      String? valueSeparator,
       bool preserveBackslash = false}) {
     return _HeaderValue.parse(value,
         parameterSeparator: parameterSeparator,
@@ -248,7 +248,7 @@ abstract class HeaderValue {
   ///
   /// This map cannot be modified. Invoking any operation which would
   /// modify the map will throw [UnsupportedError].
-  Map<String, String> get parameters;
+  Map<String, String?>? get parameters;
 
   /// Returns the formatted string representation in the form:
   ///

@@ -29,11 +29,11 @@ Interceptor newCacheInterceptor(String pattern, Cache cache) {
 ///
 /// Returns a [Interceptor]
 Interceptor newMemoryCacheInterceptor(String pattern, String cacheName,
-    {ExpiryPolicy expiryPolicy,
-    KeySampler sampler,
-    EvictionPolicy evictionPolicy,
-    int maxEntries,
-    CacheLoader cacheLoader}) {
+    {ExpiryPolicy? expiryPolicy,
+    KeySampler? sampler,
+    EvictionPolicy? evictionPolicy,
+    int? maxEntries,
+    CacheLoader? cacheLoader}) {
   return newCacheInterceptor(
       pattern,
       newMemoryCache(

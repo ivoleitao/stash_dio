@@ -10,7 +10,8 @@ import 'cache_value.dart';
 import 'header_value.dart';
 
 /// Function to call with the parsed header values
-typedef _ParseHeadCallback = void Function(Duration maxAge, Duration maxStale);
+typedef _ParseHeadCallback = void Function(
+    Duration? maxAge, Duration? maxStale);
 
 /// A [Interceptor] builder class
 class CacheInterceptorBuilder {
@@ -39,8 +40,8 @@ class CacheInterceptorBuilder {
   /// * [uri]: The [Uri] being called
   ///
   /// Returns the [Cache] if any
-  Cache _getCache(Uri uri) {
-    var input = '${uri?.host}${uri?.path}?${uri.query}';
+  Cache? _getCache(Uri uri) {
+    var input = '${uri.host}${uri.path}?${uri.query}';
     for (var entry in _cacheMap.entries) {
       if (entry.key.hasMatch(input)) {
         return entry.value;
@@ -81,7 +82,7 @@ class CacheInterceptorBuilder {
   ///
   /// Returns the key
   String _getKey(RequestOptions options) => _toMd5(
-      '${options.uri?.host}${options.uri?.path}?${options.uri?.query}_${options.data?.toString()}');
+      '${options.uri.host}${options.uri.path}?${options.uri.query}_${options.data.toString()}');
 
   /// Builds a [Response] out of [CacheValue]
   ///
@@ -90,16 +91,16 @@ class CacheInterceptorBuilder {
   ///
   /// Returns a [Response]
   Response _responseFromCacheValue(CacheValue value, RequestOptions options) {
-    Headers headers;
+    Headers? headers;
     if (value.headers != null) {
       headers = Headers.fromMap((Map<String, List<dynamic>>.from(
-              jsonDecode(utf8.decode(value.headers))))
+              jsonDecode(utf8.decode(value.headers!))))
           .map((k, v) => MapEntry(k, List<String>.from(v))));
     }
 
     if (headers == null) {
       headers = Headers();
-      options.headers.forEach((k, v) => headers.add(k, v ?? ''));
+      options.headers.forEach((k, v) => headers!.add(k, v ?? ''));
     }
 
     dynamic data = value.data;
@@ -136,9 +137,10 @@ class CacheInterceptorBuilder {
   /// * [key]: The key of the parameter to extract
   ///
   /// Returns the [Duration] if available or null is not available
-  Duration _tryGetDurationFromMap(Map<String, String> parameters, String key) {
+  Duration? _tryGetDurationFromMap(
+      Map<String, String?>? parameters, String key) {
     if (null != parameters && parameters.containsKey(key)) {
-      var value = int.tryParse(parameters[key]);
+      var value = int.tryParse(parameters[key]!);
       if (value != null && value >= 0) {
         return Duration(seconds: value);
       }
@@ -151,8 +153,8 @@ class CacheInterceptorBuilder {
   /// * [response]: The [Response]
   /// * [callback]: A callback to invoke upon sucessfull parsing
   void _tryParseHead(Response response, _ParseHeadCallback callback) {
-    Duration maxAge;
-    Duration maxStale;
+    Duration? maxAge;
+    Duration? maxStale;
     var cacheControl = response.headers.value('cache-control');
     if (cacheControl != null) {
       // try to get maxAge and maxStale from cacheControl
@@ -168,7 +170,7 @@ class CacheInterceptorBuilder {
       var expires = response.headers.value('expires');
       if (expires != null && expires.length > 4) {
         var endTime = parseHttpDate(expires).toLocal();
-        if (null != endTime && endTime.compareTo(DateTime.now()) >= 0) {
+        if (endTime.compareTo(DateTime.now()) >= 0) {
           maxAge = endTime.difference(DateTime.now());
         }
       }
@@ -183,12 +185,12 @@ class CacheInterceptorBuilder {
   ///
   /// Returns [Response] after the interception
   dynamic _onResponse(Response response) async {
-    if (response.statusCode >= 200 && response.statusCode < 300) {
+    if (response.statusCode! >= 200 && response.statusCode! < 300) {
       var cache = _getCache(response.request.uri);
       if (cache != null) {
         var options = response.request;
-        Duration maxAge;
-        DateTime staleDate;
+        Duration? maxAge;
+        DateTime? staleDate;
         if (maxAge == null) {
           _tryParseHead(response, (_maxAge, _staleTime) {
             maxAge = _maxAge;
@@ -197,7 +199,7 @@ class CacheInterceptorBuilder {
           });
         }
 
-        List<int> data;
+        List<int>? data;
         if (options.responseType == ResponseType.bytes) {
           data = response.data;
         } else {
@@ -225,11 +227,12 @@ class CacheInterceptorBuilder {
   ///
   /// Returns the error
   dynamic _onError(DioError e) async {
-    var cache = _getCache(e.request.uri);
+    var cache = _getCache(e.request!.uri);
     if (cache != null) {
-      CacheValue value = await cache.get(_getKey(e.request));
+      final value =
+          await (cache.get(_getKey(e.request!)) as Future<CacheValue?>);
       if (value != null && !value.staleDateExceeded()) {
-        return _responseFromCacheValue(value, e.request);
+        return _responseFromCacheValue(value, e.request!);
       }
     }
 
