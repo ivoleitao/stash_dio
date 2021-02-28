@@ -1,6 +1,6 @@
 ## 1.0.3
 
-- TODO
+- Updated to the most recent version of stash
 
 ## 1.0.2
 
