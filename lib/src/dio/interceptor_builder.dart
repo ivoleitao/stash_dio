@@ -110,7 +110,11 @@ class CacheInterceptorBuilder {
     }
 
     return Response(
-        data: data, headers: headers, statusCode: value.statusCode ?? 200);
+      request: options,
+      data: data,
+      headers: headers,
+      statusCode: value.statusCode ?? 200,
+    );
   }
 
   /// Intercepts a request and checks if it's present on the cache
