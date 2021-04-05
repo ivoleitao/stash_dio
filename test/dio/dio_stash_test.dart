@@ -39,6 +39,8 @@ class Post {
       };
 }
 
+class RequestOptionsFake extends Fake implements RequestOptions {}
+
 void withInterceptor(
     Dio dio,
     CacheInterceptorBuilder Function(CacheInterceptorBuilder builder)
@@ -55,7 +57,8 @@ Map<String, dynamic>? _withAnswer(_DioAdapterMock mock, dynamic obj,
     Headers.contentTypeHeader: [Headers.jsonContentType],
   });
 
-  when(mock).calls(#fetch).thenAnswer((_) async => responseBody);
+  when(() => mock.fetch(captureAny(), captureAny(), captureAny()))
+      .thenAnswer((_) => Future.value(responseBody));
 
   return response;
 }
@@ -72,6 +75,8 @@ void main() async {
     dio = Dio(BaseOptions(baseUrl: baseUrl));
     dioAdapterMock = _DioAdapterMock();
     dio.httpClientAdapter = dioAdapterMock;
+
+    registerFallbackValue<RequestOptions>(RequestOptionsFake());
   });
 
   test('Without cache', () async {

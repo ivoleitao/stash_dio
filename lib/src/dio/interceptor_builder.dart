@@ -110,25 +110,32 @@ class CacheInterceptorBuilder {
     }
 
     return Response(
-        data: data, headers: headers, statusCode: value.statusCode ?? 200);
+        data: data,
+        headers: headers,
+        requestOptions: options,
+        statusCode: value.statusCode ?? 200);
   }
 
   /// Intercepts a request and checks if it's present on the cache
   ///
   /// * [options]: The [RequestOptions]
+  /// * [handler]: The [RequestInterceptorHandler]
   ///
   /// Returns the response after a HTTP request or the cached response if
   /// available on cache
-  dynamic _onRequest(RequestOptions options) async {
+  void _onRequest(
+      RequestOptions options, RequestInterceptorHandler handler) async {
     var cache = _getCache(options.uri);
     if (cache != null) {
       var value = await cache.get(_getKey(options));
       if (value != null) {
-        return _responseFromCacheValue(value as CacheValue, options);
+        handler.resolve(
+            _responseFromCacheValue(value as CacheValue, options), false);
+        return;
       }
     }
 
-    return options;
+    handler.next(options);
   }
 
   /// Parses a duration out of a parameter map
@@ -182,13 +189,15 @@ class CacheInterceptorBuilder {
   /// Intercepts the received from a HTTP call and stores on cache
   ///
   /// * [response]: The [Response]
+  /// * [handler]: The [RequestInterceptorHandler]
   ///
   /// Returns [Response] after the interception
-  dynamic _onResponse(Response response) async {
+  void _onResponse(
+      Response<dynamic> response, ResponseInterceptorHandler handler) async {
     if (response.statusCode! >= 200 && response.statusCode! < 300) {
-      var cache = _getCache(response.request.uri);
+      var cache = _getCache(response.requestOptions.uri);
       if (cache != null) {
-        var options = response.request;
+        var options = response.requestOptions;
         Duration? maxAge;
         DateTime? staleDate;
         if (maxAge == null) {
@@ -207,7 +216,7 @@ class CacheInterceptorBuilder {
         }
 
         await cache.put(
-            _getKey(response.request),
+            _getKey(options),
             CacheValue(
                 statusCode: response.statusCode,
                 headers: utf8.encode(jsonEncode(response.headers.map)),
@@ -217,26 +226,27 @@ class CacheInterceptorBuilder {
       }
     }
 
-    return response;
+    handler.next(response);
   }
 
   /// Intercepts the call triggered upon error and returns if available the
   /// cached response
   ///
   /// * [e]: The [DioError]
+  /// * [handler]: The [ErrorInterceptorHandler]
   ///
   /// Returns the error
-  dynamic _onError(DioError e) async {
-    var cache = _getCache(e.request!.uri);
+  void _onError(DioError e, ErrorInterceptorHandler handler) async {
+    var cache = _getCache(e.requestOptions.uri);
     if (cache != null) {
-      final value =
-          await (cache.get(_getKey(e.request!)) as Future<CacheValue?>);
+      final value = (await cache.get(_getKey(e.requestOptions))) as CacheValue?;
+
       if (value != null && !value.staleDateExceeded()) {
-        return _responseFromCacheValue(value, e.request!);
+        handler.resolve(_responseFromCacheValue(value, e.requestOptions));
       }
     }
 
-    return e;
+    handler.next(e);
   }
 
   /// Builds the [Interceptor]

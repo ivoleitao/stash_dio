@@ -9,16 +9,17 @@ environment:
   sdk: '>=2.12.0-0 <3.0.0'
 
 dependencies:
-  equatable: ^2.0.0-nullsafety.4
+  equatable: ^2.0.0
   http_parser: ^4.0.0
-  crypto: ^3.0.0
-  dio: ^4.0.0-beta1
-  stash: ^2.0.0-nullsafety.2
+  crypto: ^3.0.1
+  dio: ^4.0.0
+  stash: ^2.0.0-nullsafety.3
   #stash:
   #  path: ../stash
 
 dev_dependencies:
-  pedantic: ^1.10.0
-  test: ^1.16.4
-    # test_coverage: ^0.4.3
-  mocktail: ^0.0.1-dev.11
+  pedantic: ^1.11.0
+  test: ^1.16.8
+  mocktail: ^0.1.1
+
+scripts: derry.yaml

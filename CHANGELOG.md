@@ -1,3 +1,11 @@
+## 2.0.0-nullsafety.2
+
+- Some smaller fixes
+- Updated dependencies
+- Updated github actions with setup dart action
+- derry support
+- Migrated to new interceptor API
+
 ## 2.0.0-nullsafety.1
 
 - Null safety support
